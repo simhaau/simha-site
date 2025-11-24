@@ -1,0 +1,3940 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveMaster - אפליקציית ניהול נסיעות</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #2c3e50;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #dfe6e9;
+            --hover: rgba(52, 152, 219, 0.1);
+        }
+
+        .dark-theme {
+            --primary: #1abc9c;
+            --secondary: #34495e;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --light: #2c3e50;
+            --dark: #ecf0f1;
+            --text: #ecf0f1;
+            --background: #1a1a2e;
+            --card-bg: #16213e;
+            --border: #34495e;
+            --hover: rgba(26, 188, 156, 0.1);
+        }
+
+        .green-theme {
+            --primary: #27ae60;
+            --secondary: #16a085;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #2c3e50;
+            --background: #eafaf1;
+            --card-bg: #ffffff;
+            --border: #d5f5e3;
+            --hover: rgba(39, 174, 96, 0.1);
+        }
+
+        .purple-theme {
+            --primary: #9b59b6;
+            --secondary: #8e44ad;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #2c3e50;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e8daef;
+            --hover: rgba(155, 89, 182, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding-top: 60px;
+            padding-bottom: 70px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .app-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+        }
+
+        .app-logo i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .driver-name {
+            flex: 1;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            display: none;
+            padding: 15px;
+            animation: fadeIn 0.3s;
+            position: relative;
+            min-height: calc(100vh - 120px);
+        }
+
+        .main-container {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            text-align: center;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text);
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .grid-button {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 130px;
+        }
+
+        .grid-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background-color: var(--hover);
+        }
+
+        .grid-button i {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .grid-button h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .grid-button p {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #219653);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #e67e22);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--hover);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--secondary), #2c3e50);
+            color: white;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, var(--secondary), var(--dark));
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #bdc3c7;
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 8px 5px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            width: 70px;
+        }
+
+        .nav-btn i {
+            font-size: 1.3rem;
+            margin-bottom: 3px;
+        }
+
+        .nav-btn.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-btn:hover {
+            color: white;
+        }
+
+        .ride-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ride-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .ride-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .ride-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .ride-destination {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .ride-price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--success);
+        }
+
+        .ride-details {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .ride-notes {
+            font-size: 0.9rem;
+            color: var(--text);
+            opacity: 0.9;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .ride-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .add-ride-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success), #219653);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: modalFade 0.3s;
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .close-modal:hover {
+            background-color: var(--hover);
+            color: var(--danger);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 8px 0;
+            color: var(--primary);
+        }
+
+        .calendar-day {
+            text-align: center;
+            padding: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background-color: var(--hover);
+        }
+
+        .calendar-day.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .calendar-day.has-rides::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--success);
+        }
+
+        .calendar-day.has-tasks::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 30%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--warning);
+        }
+
+        .day-rides {
+            margin-top: 20px;
+        }
+
+        .help-icon {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 999;
+        }
+
+        .credit-section {
+            text-align: center;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 12px;
+            background-color: var(--hover);
+            border: 1px dashed var(--primary);
+        }
+
+        .credit-section p {
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin: 5px 0;
+        }
+
+        .credit-section .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 0;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .price-list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .price-list-item:last-child {
+            border-bottom: none;
+        }
+
+        /* סגנונות למונה */
+        .meter-container {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: none;
+        }
+
+        .meter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .meter-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .meter-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .meter-stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .meter-stat-label {
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .meter-stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .meter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .meter-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .meter-btn-pause {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .meter-btn-waiting {
+            background-color: #9b59b6;
+            color: white;
+        }
+
+        .meter-btn-end {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .meter-btn-close {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* סגנונות למשימות */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .task-item {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .task-time {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* קרדיט בתחתית */
+        .footer-credit {
+            text-align: center;
+            padding: 15px 0;
+            margin-top: auto;
+        }
+
+        .footer-credit p {
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin: 3px 0;
+        }
+
+        .footer-credit .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* התראות */
+        .notification-container {
+            position: fixed;
+            top: 70px;
+            right: 15px;
+            z-index: 9999;
+            max-width: 350px;
+        }
+
+        .notification {
+            background-color: var(--card-bg);
+            border-left: 5px solid var(--warning);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s;
+        }
+
+        .notification-ride {
+            border-left: 5px solid var(--success);
+        }
+
+        .notification-error {
+            border-left: 5px solid var(--danger);
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            color: var(--warning);
+        }
+
+        .notification-ride .notification-icon {
+            color: var(--success);
+        }
+
+        .notification-error .notification-icon {
+            color: var(--danger);
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .notification-message {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            align-self: flex-start;
+        }
+
+        .notification-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* מסך התחברות */
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo i {
+            font-size: 4rem;
+            color: var(--primary);
+        }
+
+        .login-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .login-instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-example {
+            background-color: var(--hover);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* סגנונות לעזרה */
+        .help-content {
+            line-height: 1.6;
+        }
+
+        .help-content h3 {
+            margin: 15px 0 10px;
+            color: var(--primary);
+        }
+
+        .help-content ul {
+            padding-right: 20px;
+            margin-bottom: 15px;
+        }
+
+        .help-content li {
+            margin-bottom: 8px;
+        }
+
+        .help-content p {
+            margin-bottom: 12px;
+        }
+
+        /* סגנונות לחשבונית */
+        .invoice-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .invoice-logo {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .invoice-title {
+            font-size: 22px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .invoice-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .invoice-section {
+            margin-bottom: 15px;
+        }
+
+        .invoice-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .invoice-value {
+            color: #333;
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .invoice-table th {
+            background-color: #f5f5f5;
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .invoice-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .invoice-total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: left;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid #ddd;
+        }
+
+        .invoice-footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .invoice-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* סגנונות להודעות */
+        .message-modal textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <!-- מסך התחברות -->
+    <div id="loginScreen" class="container main-container">
+        <div class="login-container">
+            <div class="login-logo">
+                <i class="fas fa-car"></i>
+                <h1>DriveMaster</h1>
+            </div>
+            
+            <div class="login-form">
+                <h2 class="login-title">התחברות למערכת</h2>
+                <p class="login-instructions">ברוכים הבאים ל-DriveMaster! להפעלת המערכת יש להזין את קוד האימות שקיבלת.</p>
+                
+                <div class="form-group">
+                    <label for="authCode">קוד אימות:</label>
+                    <input type="text" id="authCode" placeholder="הזן את קוד האימות" maxlength="7">
+                </div>
+                
+                <button class="btn btn-block" onclick="checkAuthCode()">
+                    <i class="fas fa-sign-in-alt"></i> התחבר
+                </button>
+            </div>
+            
+            <div class="credit-section">
+                <p>לקבלת קוד אימות, פנה לתמיכה:</p>
+                <p><span class="highlight">053-5425454</span> | <span class="highlight">simhaau1@gmail.com</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- כותרת עליונה -->
+    <div class="header">
+        <div class="header-content">
+            <div class="app-logo">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="driver-name" id="driverName">דוד כהן</div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- אזור להתראות -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- מסך ראשי -->
+    <div id="mainScreen" class="container">
+        <h1 class="page-title">
+            <i class="fas fa-car"></i> DriveMaster
+        </h1>
+        <p class="page-subtitle">אפליקציית ניהול נסיעות מקצועית לנהגים</p>
+        
+        <div class="grid-buttons">
+            <div class="grid-button" onclick="showScreen('rideScreen')">
+                <i class="fas fa-taxi"></i>
+                <h3>נסיעות</h3>
+                <p>ניהול ותיעוד נסיעות</p>
+            </div>
+            <div class="grid-button" onclick="showScreen('calendarScreen')">
+                <i class="fas fa-calendar-alt"></i>
+                <h3>יומן</h3>
+                <p>תכנון נסיעות ומשימות</p>
+            </div>
+            <div class="grid-button" onclick="showScreen('reportsScreen')">
+                <i class="fas fa-chart-bar"></i>
+                <h3>דוחות</h3>
+                <p>ניתוח נתונים והכנסות</p>
+            </div>
+            <div class="grid-button" onclick="showScreen('settingsScreen')">
+                <i class="fas fa-cog"></i>
+                <h3>הגדרות</h3>
+                <p>הגדרות אישיות ומערכת</p>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 25px;">
+            <h2 class="card-title">
+                <i class="fas fa-history"></i> נסיעות אחרונות
+            </h2>
+            
+            <div class="ride-list" id="recentRidesList">
+                <!-- נטען דינאמית -->
+            </div>
+        </div>
+
+        <div class="footer-credit">
+            <p>אפליקציה זו נבנתה על ידי <span class="highlight">S.A מערכות</span></p>
+            <p>להזמנות: <span class="highlight">053-5425454</span> | <span class="highlight">simhaau1@gmail.com</span></p>
+            <p>© 2023 DriveMaster - כל הזכויות שמורות</p>
+        </div>
+    </div>
+
+    <!-- מסך נסיעות -->
+    <div id="rideScreen" class="container">
+        <h1 class="page-title">
+            <i class="fas fa-taxi"></i> ניהול נסיעות
+        </h1>
+        
+        <div class="card">
+            <h2 class="card-title">רשימת נסיעות</h2>
+            
+            <button class="btn btn-block" onclick="startMeterRide()" style="margin-bottom: 15px;">
+                <i class="fas fa-taxi"></i> התחל נסיעה לפי מונה
+            </button>
+            
+            <div class="ride-list" id="allRidesList">
+                <!-- נטען דינאמית -->
+            </div>
+        </div>
+
+        <div class="footer-credit">
+            <p>אפליקציה זו נבנתה על ידי <span class="highlight">S.A מערכות</span></p>
+            <p>להזמנות: <span class="highlight">053-5425454</span> | <span class="highlight">simhaau1@gmail.com</span></p>
+            <p>© 2023 DriveMaster - כל הזכויות שמורות</p>
+        </div>
+    </div>
+
+    <!-- מסך יומן -->
+    <div id="calendarScreen" class="container">
+        <h1 class="page-title">
+            <i class="fas fa-calendar-alt"></i> יומן נסיעות
+        </h1>
+        
+        <div class="card">
+            <div class="form-group">
+                <label for="calendarMonth">בחר חודש:</label>
+                <input type="month" id="calendarMonth" value="2023-08">
+            </div>
+            
+            <div class="calendar-container" id="calendarContainer">
+                <!-- נטען דינאמית -->
+            </div>
+            
+            <div class="day-rides" id="dayRidesContainer">
+                <!-- נטען דynamically -->
+            </div>
+
+            <button class="btn btn-block" onclick="openAddTaskModal()">
+                <i class="fas fa-plus"></i> הוסף משימה ליומן
+            </button>
+        </div>
+
+        <div class="footer-credit">
+            <p>אפליקציה זו נבנתה על ידי <span class="highlight">S.A מערכות</span></p>
+            <p>להזמנות: <span class="highlight">053-5425454</span> | <span class="highlight">simhaau1@gmail.com</span></p>
+            <p>© 2023 DriveMaster - כל הזכויות שמורות</p>
+        </div>
+    </div>
+
+    <!-- מסך דוחות -->
+    <div id="reportsScreen" class="container">
+        <h1 class="page-title">
+            <i class="fas fa-chart-bar"></i> דוחות וניתוחים
+        </h1>
+        
+        <div class="stats-container" id="statsContainer">
+            <!-- נטען דינאמית -->
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('dailyReport')">דוח יומי</div>
+            <div class="tab" onclick="switchTab('monthlyReport')">דוח חודשי</div>
+            <div class="tab" onclick="switchTab('additionalEntries')">הכנסות והוצאות</div>
+        </div>
+        
+        <div class="tab-content active" id="dailyReport">
+            <div class="card">
+                <div class="form-group">
+                    <label for="reportDate">בחר תאריך:</label>
+                    <input type="date" id="reportDate">
+                </div>
+                
+                <div class="table-container">
+                    <table id="dailyReportTable">
+                        <!-- נטען דינאמית -->
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="monthlyReport">
+            <div class="card">
+                <div class="form-group">
+                    <label for="monthSelect">בחר חודש:</label>
+                    <input type="month" id="monthSelect" value="2023-08">
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <canvas id="monthlyChart" height="250"></canvas>
+                </div>
+                
+                <div class="table-container">
+                    <table id="monthlyReportTable">
+                        <!-- נטען דינאמית -->
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="additionalEntries">
+            <div class="card">
+                <h2 class="card-title">הכנסות והוצאות נוספות</h2>
+                
+                <div class="form-group">
+                    <label>סוג:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-block btn-success" onclick="showIncomeForm()">הכנסה נוספת</button>
+                        <button class="btn btn-block btn-danger" onclick="showExpenseForm()">הוצאה נוספת</button>
+                    </div>
+                </div>
+                
+                <div id="incomeForm" class="hidden">
+                    <div class="form-group">
+                        <label for="incomeAmount">סכום (₪):</label>
+                        <input type="number" id="incomeAmount" placeholder="סכום ההכנסה">
+                    </div>
+                    <div class="form-group">
+                        <label for="incomeDescription">תיאור:</label>
+                        <input type="text" id="incomeDescription" placeholder="תיאור ההכנסה">
+                    </div>
+                    <button class="btn btn-success" onclick="addIncome()">
+                        <i class="fas fa-plus"></i> הוסף הכנסה
+                    </button>
+                </div>
+                
+        <div id="expenseForm" class="hidden">
+            <div class="form-group">
+                <label for="expenseAmount">סכום (₪):</label>
+                <input type="number" id="expenseAmount" placeholder="סכום ההוצאה">
+            </div>
+            <div class="form-group">
+                <label for="expenseDescription">תיאור:</label>
+                <input type="text" id="expenseDescription" placeholder="תיאור ההוצאה">
+            </div>
+            <button class="btn btn-danger" onclick="addExpense()">
+                <i class="fas fa-plus"></i> הוסף הוצאה
+            </button>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3 style="margin-bottom: 15px; color: var(--success);">הכנסות נוספות</h3>
+            <table id="additionalIncomesTable">
+                <!-- נטען דינאמית -->
+            </table>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3 style="margin-bottom: 15px; color: var(--danger);">הוצאות נוספות</h3>
+            <table id="additionalExpensesTable">
+                <!-- נטען דינאמית -->
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer-credit">
+    <p>אפליקציה זו נבנתה על ידי <span class="highlight">S.A מערכות</span></p>
+    <p>להזמנות: <span class="highlight">053-5425454</span> | <span class="highlight">simhaau1@gmail.com</span></p>
+    <p>© 2023 DriveMaster - כל הזכויות שמורות</p>
+</div>
+</div>
+
+<!-- מסך הגדרות -->
+<div id="settingsScreen" class="container">
+    <h1 class="page-title">
+        <i class="fas fa-cog"></i> הגדרות מערכת
+    </h1>
+    
+    <div class="card">
+        <h2 class="card-title">פרטים אישיים</h2>
+        
+        <div class="form-group">
+            <label for="driverNameInput">שם הנהג:</label>
+            <input type="text" id="driverNameInput" placeholder="הזן את שמך המלא" value="דוד כהן">
+        </div>
+        
+        <div class="form-group">
+            <label for="phoneNumber">מספר טלפון:</label>
+            <input type="tel" id="phoneNumber" placeholder="הזן מספר טלפון" value="054-1234567">
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-money-bill-wave"></i> מחירון נסיעות</h2>
+        
+        <div class="form-group">
+            <label>הוסף יעד חדש:</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="newDestination" placeholder="שם היעד" style="flex: 2;">
+                <input type="number" id="newPrice" placeholder="מחיר (₪)" style="flex: 1;">
+                <button class="btn btn-success" onclick="addPriceItem()" style="padding: 12px 15px;">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h3 style="margin-bottom: 15px; color: var(--primary);">יעדים נפוצים:</h3>
+            <div id="priceList">
+                <!-- נטען דינאמית -->
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-taxi"></i> הגדרות מונה</h2>
+        
+        <div class="form-group">
+            <label for="basePrice">מחיר התחלתי (₪):</label>
+            <input type="number" id="basePrice" value="12" placeholder="מחיר התחלתי">
+        </div>
+        
+        <div class="form-group">
+            <label for="pricePerMinute">מחיר לדקת נסיעה (₪):</label>
+            <input type="number" id="pricePerMinute" value="0.5" step="0.1" placeholder="מחיר לדקת נסיעה">
+        </div>
+        
+        <div class="form-group">
+            <label for="waitingPricePerMinute">מחיר לדקת המתנה (₪):</label>
+            <input type="number" id="waitingPricePerMinute" value="0.8" step="0.1" placeholder="מחיר לדקת המתנה">
+        </div>
+        
+        <div class="form-group">
+            <label for="freeWaitingMinutes">זמן המתנה חינם (דקות):</label>
+            <input type="number" id="freeWaitingMinutes" value="3" min="0" placeholder="זמן המתנה חינם">
+        </div>
+        
+        <button class="btn btn-block" onclick="saveMeterSettings()">
+            <i class="fas fa-save"></i> שמור הגדרות מונה
+        </button>
+    </div>
+    
+    <div class="card">
+        <h2 class="card-title"><i class="fas fa-palette"></i> עיצוב האפליקציה</h2>
+        
+        <div class="form-group">
+            <label>ערכת צבעים:</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn" onclick="setTheme('default')" style="background: linear-gradient(135deg, #3498db, #2c3e50);">ברירת מחדל</button>
+                <button class="btn" onclick="setTheme('dark')" style="background: linear-gradient(135deg, #1abc9c, #34495e);">כהה</button>
+                <button class="btn" onclick="setTheme('green')" style="background: linear-gradient(135deg, #27ae60, #16a085);">ירוק</button>
+                <button class="btn" onclick="setTheme('purple')" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">סגול</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-credit">
+        <p>אפליקציה זו נבנתה על ידי <span class="highlight">S.A מערכות</span></p>
+        <p>להזמנות: <span class="highlight">053-5425454</span> | <span class="highlight">simhaau1@gmail.com</span></p>
+        <p>© 2023 DriveMaster - כל הזכויות שמורות</p>
+    </div>
+</div>
+
+<!-- כפתור הוספת נסיעה -->
+<button class="add-ride-btn" onclick="openAddRideModal()">
+    <i class="fas fa-plus"></i>
+</button>
+
+<!-- כפתור עזרה -->
+<div class="help-icon" onclick="showHelpForCurrentScreen()">
+    <i class="fas fa-question"></i>
+</div>
+
+<!-- מונה נסיעות -->
+<div class="meter-container" id="meterContainer">
+    <div class="meter-header">
+        <div class="meter-title">מונה נסיעה פעילה</div>
+        <button class="close-modal" onclick="closeMeter()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="meter-stats">
+        <div class="meter-stat">
+            <div class="meter-stat-label">זמן נסיעה</div>
+            <div class="meter-stat-value" id="rideTimeDisplay">00:00</div>
+        </div>
+        <div class="meter-stat">
+            <div class="meter-stat-label">זמן המתנה</div>
+            <div class="meter-stat-value" id="waitingTimeDisplay">00:00</div>
+        </div>
+        <div class="meter-stat">
+            <div class="meter-stat-label">מחיר משוער</div>
+            <div class="meter-stat-value" id="ridePrice">0₪</div>
+        </div>
+    </div>
+    
+    <div class="meter-actions">
+        <button class="meter-btn meter-btn-pause" id="pauseResumeBtn" onclick="toggleMeterPause()">
+            <i class="fas fa-pause"></i> השהה
+        </button>
+        <button class="meter-btn meter-btn-waiting" id="waitingBtn" onclick="toggleWaiting()">
+            <i class="fas fa-clock"></i> המתנה
+        </button>
+        <button class="meter-btn meter-btn-end" onclick="endMeterRide()">
+            <i class="fas fa-stop"></i> סיום נסיעה
+        </button>
+    </div>
+</div>
+
+<!-- מודל להוספת נסיעה -->
+<div class="modal" id="addRideModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">הוספת נסיעה חדשה</h2>
+            <button class="close-modal" onclick="closeModal('addRideModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label for="customerName">שם הלקוח:</label>
+            <input type="text" id="customerName" placeholder="הזן שם לקוח">
+        </div>
+        
+        <div class="form-group">
+            <label for="customerPhone">טלפון הלקוח:</label>
+            <input type="tel" id="customerPhone" placeholder="הזן מספר טלפון">
+        </div>
+        
+        <div class="form-group">
+            <label for="destination">יעד הנסיעה:</label>
+            <input type="text" id="destination" placeholder="הזן יעד נסיעה">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="price">מחיר (₪):</label>
+                <input type="number" id="price" placeholder="מחיר הנסיעה">
+            </div>
+            
+            <div class="form-group">
+                <label for="commonDestinations">בחירה מרשימה:</label>
+                <select id="commonDestinations">
+                    <option value="">בחר יעד נפוץ</option>
+                    <!-- נטען דינאמית -->
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="rideDate">תאריך:</label>
+                <input type="date" id="rideDate">
+            </div>
+            
+            <div class="form-group">
+                <label for="rideTime">שעה:</label>
+                <input type="time" id="rideTime">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">הערות:</label>
+            <textarea id="notes" rows="3" placeholder="הוסף הערות על הנסיעה..."></textarea>
+        </div>
+        
+        <button class="btn btn-block" onclick="addRide()">
+            <i class="fas fa-save"></i> שמור נסיעה
+        </button>
+    </div>
+</div>
+
+<!-- מודל לעריכת נסיעה -->
+<div class="modal" id="editRideModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">עריכת נסיעה</h2>
+            <button class="close-modal" onclick="closeModal('editRideModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <input type="hidden" id="editRideId">
+        
+        <div class="form-group">
+            <label for="editCustomerName">שם הלקוח:</label>
+            <input type="text" id="editCustomerName" placeholder="הזן שם לקוח">
+        </div>
+        
+        <div class="form-group">
+            <label for="editCustomerPhone">טלפון הלקוח:</label>
+            <input type="tel" id="editCustomerPhone" placeholder="הזן מספר טלפון">
+        </div>
+        
+        <div class="form-group">
+            <label for="editDestination">יעד הנסיעה:</label>
+            <input type="text" id="editDestination" placeholder="הזן יעד נ סיעה">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="editPrice">מחיר (₪):</label>
+                <input type="number" id="editPrice" placeholder="מחיר הנסיעה">
+            </div>
+            
+            <div class="form-group">
+                <label for="editCommonDestinations">בחירה מרשימה:</label>
+                <select id="editCommonDestinations">
+                    <option value="">בחר יעד נפוץ</option>
+                    <!-- נטען דינאמית -->
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="editRideDate">תאריך:</label>
+                <input type="date" id="editRideDate">
+            </div>
+            
+            <div class="form-group">
+                <label for="editRideTime">שעה:</label>
+                <input type="time" id="editRideTime">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="editNotes">הערות:</label>
+            <textarea id="editNotes" rows="3" placeholder="הוסף הערות על הנסיעה..."></textarea>
+        </div>
+        
+        <button class="btn btn-block" onclick="updateRide()">
+            <i class="fas fa-save"></i> עדכן נסיעה
+        </button>
+    </div>
+</div>
+
+<!-- מודל להוספת משימה -->
+<div class="modal" id="addTaskModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">הוספת משימה ליומן</h2>
+            <button class="close-modal" onclick="closeModal('addTaskModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label for="taskTitle">כותרת המשימה:</label>
+            <input type="text" id="taskTitle" placeholder="כותרת המשימה">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="taskDate">תאריך:</label>
+                <input type="date" id="taskDate">
+            </div>
+            
+            <div class="form-group">
+                <label for="taskTime">שעה:</label>
+                <input type="time" id="taskTime">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="taskPrice">מחיר (₪) - אופציונלי:</label>
+            <input type="number" id="taskPrice" placeholder="מחיר לנסיעה">
+        </div>
+        
+        <div class="form-group">
+            <label for="taskDescription">תיאור המשימה:</label>
+            <textarea id="taskDescription" rows="3" placeholder="תיאור המשימה..."></textarea>
+        </div>
+        
+        <button class="btn btn-block" onclick="addTask()">
+            <i class="fas fa-save"></i> שמור משימה
+        </button>
+    </div>
+</div>
+
+<!-- מודל לסיום נסיעה במונה -->
+<div class="modal" id="endRideModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">סיום נסיעה</h2>
+            <button class="close-modal" onclick="closeModal('endRideModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label for="customerNameMeter">שם הלקוח:</label>
+            <input type="text" id="customerNameMeter" placeholder="הזן שם לקוח">
+        </div>
+        
+        <div class="form-group">
+            <label for="customerPhoneMeter">טלפון הלקוח:</label>
+            <input type="tel" id="customerPhoneMeter" placeholder="הזן מספר טלפון">
+        </div>
+        
+        <div class="form-group">
+            <label for="finalPrice">מחיר סופי (₪):</label>
+            <input type="number" id="finalPrice" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label for="meterDiscount">הנחה (₪):</label>
+            <input type="number" id="meterDiscount" value="0" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label for="meterDestination">יעד הנסיעה:</label>
+            <input type="text" id="meterDestination" placeholder="יעד הנסיעה">
+        </div>
+        
+        <div class="form-group">
+            <label for="meterNotes">הערות:</label>
+            <textarea id="meterNotes" rows="3" placeholder="הערות על הנסיעה..."></textarea>
+        </div>
+        
+        <button class="btn btn-block btn-success" onclick="saveMeterRide()">
+            <i class="fas fa-check"></i> שמור נסיעה
+        </button>
+    </div>
+</div>
+
+<!-- מודל חשבונית -->
+<div class="modal" id="invoiceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">יצירת חשבונית</h2>
+            <button class="close-modal" onclick="closeModal('invoiceModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="invoice-container" id="invoiceContent">
+            <!-- נטען דינאמית -->
+        </div>
+        
+        <div class="invoice-actions">
+            <button class="btn btn-outline" onclick="printInvoice()">
+                <i class="fas fa-print"></i> הדפס
+            </button>
+            <button class="btn" onclick="sendInvoice()">
+                <i class="fas fa-paper-plane"></i> שלח ללקוח
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- מודל קבלה -->
+<div class="modal" id="receiptModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">יצירת קבלה</h2>
+            <button class="close-modal" onclick="closeModal('receiptModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label for="receivedAmount">סכום שהתקבל (₪):</label>
+            <input type="number" id="receivedAmount" placeholder="הזן סכום שהתקבל">
+        </div>
+        
+        <div class="form-group">
+            <label for="paymentMethod">שיטת תשלום:</label>
+            <select id="paymentMethod">
+                <option value="cash">מזומן</option>
+                <option value="credit">אשראי</option>
+                <option value="bit">ביט</option>
+                <option value="paybox">פייבקס</option>
+            </select>
+        </div>
+        
+        <div class="invoice-container" id="receiptContent">
+            <!-- נטען דינאמית -->
+        </div>
+        
+        <div class="invoice-actions">
+            <button class="btn btn-outline" onclick="printReceipt()">
+                <i class="fas fa-print"></i> הדפס
+            </button>
+            <button class="btn" onclick="sendReceipt()">
+                <i class="fas fa-paper-plane"></i> שלח ללקוח
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- מודל הודעת SMS -->
+<div class="modal message-modal" id="messageModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="messageModalTitle">שליחת הודעה</h2>
+            <button class="close-modal" onclick="closeModal('messageModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label for="messageText">הודעת SMS:</label>
+            <textarea id="messageText" rows="4" placeholder="ההודעה שתישלח ללקוח..."></textarea>
+        </div>
+        
+        <button class="btn btn-block" onclick="sendSMS()">
+            <i class="fas fa-paper-plane"></i> שלח הודעה
+        </button>
+    </div>
+</div>
+
+<!-- מודל עזרה -->
+<div class="modal" id="helpModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="helpModalTitle">עזרה והסברים</h2>
+            <button class="close-modal" onclick="closeModal('helpModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="help-content" id="helpModalContent">
+            <!-- נטען דינאמית -->
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-outline" onclick="closeModal('helpModal')" style="flex: 1;">
+                <i class="fas fa-arrow-right"></i> חזרה
+            </button>
+            <button class="btn" onclick="closeModal('helpModal')" style="flex: 1;">
+                <i class="fas fa-check"></i> הבנתי
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- תפריט ניווט תחתון -->
+<div class="footer">
+    <button class="nav-btn" onclick="showScreen('mainScreen')">
+        <i class="fas fa-home"></i>
+        בית
+    </button>
+    <button class="nav-btn" onclick="showScreen('rideScreen')">
+        <i class="fas fa-taxi"></i>
+        נסיעות
+    </button>
+    <button class="nav-btn" onclick="showScreen('calendarScreen')">
+        <i class="fas fa-calendar-alt"></i>
+        יומן
+    </button>
+    <button class="nav-btn" onclick="showScreen('reportsScreen')">
+        <i class="fas fa-chart-bar"></i>
+        דוחות
+    </button>
+    <button class="nav-btn" onclick="showScreen('settingsScreen')">
+        <i class="fas fa-cog"></i>
+        הגדרות
+    </button>
+</div>
+
+<script>
+    // מבנה הנתונים
+    let appData = {
+        driverName: "דוד כהן",
+        phoneNumber: "054-1234567",
+        rides: [],
+        tasks: [],
+        priceList: [
+            { destination: "תחנת רכבת מרכזית", price: 45 },
+            { destination: "נמל תעופה", price: 120 },
+            { destination: "מרכז העיר", price: 30 },
+            { destination: "אוניברסיטה", price: 35 },
+            { destination: "בית חולים", price: 40 }
+        ],
+        additionalIncomes: [],
+        additionalExpenses: [],
+        meterSettings: {
+            basePrice: 12,
+            pricePerMinute: 0.5,
+            waitingPricePerMinute: 0.8,
+            freeWaitingMinutes: 3
+        },
+        settings: {
+            theme: "default"
+        }
+    };
+
+    // משתנים גלובליים למונה
+    let meterInterval;
+    let meterStartTime;
+    let meterPaused = false;
+    let meterPauseTime;
+    let totalPausedTime = 0;
+    let rideTimerValue = 0;
+    
+    // משתנים לניהול המתנה
+    let waitingInterval;
+    let waitingStartTime;
+    let waitingTimerValue = 0;
+    let isWaiting = false;
+    let freeWaitingTime = 3 * 60; // 3 דקות חינם בשניות
+
+    // משתנה לנסיעה הנוכחית לחשבונית
+    let currentRideForInvoice = null;
+
+    // אתחול האפליקציה
+    document.addEventListener('DOMContentLoaded', function() {
+        // בדיקה אם המשתמש כבר התחבר
+        const isAuthenticated = localStorage.getItem('driveMasterAuthenticated');
+        if (isAuthenticated) {
+            loadData();
+            initApp();
+            showScreen('mainScreen');
+        } else {
+            // הצגת מסך התחברות
+            document.getElementById('loginScreen').style.display = 'block';
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.style.display = 'none';
+            });
+        }
+        
+        // הגדרת תאריך ושעה ברירת מחדל
+        const now = new Date();
+        document.getElementById('rideDate').valueAsDate = now;
+        document.getElementById('rideTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        document.getElementById('reportDate').valueAsDate = now;
+        document.getElementById('taskDate').valueAsDate = now;
+        document.getElementById('taskTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    });
+
+    // בדיקת קוד אימות
+    function checkAuthCode() {
+        const inputCode = document.getElementById('authCode').value;
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const correctCode = day + '240' + month;
+        
+        if (inputCode === correctCode) {
+            localStorage.setItem('driveMasterAuthenticated', 'true');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.style.display = 'flex';
+            });
+            loadData();
+            initApp();
+            showScreen('mainScreen');
+            showNotification('התחברת בהצלחה! ברוך הבא ל-DriveMaster', 'success');
+        } else {
+            showNotification('קוד אימות לא תקין. נסה שוב.', 'error');
+        }
+    }
+
+    // פונקציות לטעינה ושמירת נתונים
+    function loadData() {
+        const savedData = localStorage.getItem('driveMasterData');
+        if (savedData) {
+            appData = JSON.parse(savedData);
+        }
+        document.getElementById('driverName').textContent = appData.driverName;
+        document.getElementById('driverNameInput').value = appData.driverName;
+        document.getElementById('phoneNumber').value = appData.phoneNumber || "054-1234567";
+        
+        // טעינת זמן המתנה חינם
+        if (appData.meterSettings.freeWaitingMinutes) {
+            freeWaitingTime = appData.meterSettings.freeWaitingMinutes * 60;
+            document.getElementById('freeWaitingMinutes').value = appData.meterSettings.freeWaitingMinutes;
+        }
+        
+        // הפעלת ערכת הצבעים השמורה
+        setTheme(appData.settings.theme);
+        
+        // טעינת נתונים למסכים
+        renderRecentRides();
+        renderAllRides();
+        renderCalendar();
+        renderReports();
+        renderPriceList();
+        renderCommonDestinations();
+        
+        // טעינת הגדרות מונה
+        document.getElementById('basePrice').value = appData.meterSettings.basePrice;
+        document.getElementById('pricePerMinute').value = appData.meterSettings.pricePerMinute;
+        document.getElementById('waitingPricePerMinute').value = appData.meterSettings.waitingPricePerMinute;
+        
+        // בדיקת התראות כל 30 שניות
+        setInterval(checkTaskNotifications, 30000);
+        checkTaskNotifications(); // בדיקה ראשונית
+    }
+
+    function saveData() {
+        localStorage.setItem('driveMasterData', JSON.stringify(appData));
+    }
+
+    // אתחול האפליקציה
+    function initApp() {
+        // עדכון שם הנהג
+        document.getElementById('driverNameInput').addEventListener('change', function() {
+            appData.driverName = this.value;
+            document.getElementById('driverName').textContent = this.value;
+            saveData();
+        });
+        
+        // עדכון מספר הטלפון
+        document.getElementById('phoneNumber').addEventListener('change', function() {
+            appData.phoneNumber = this.value;
+            saveData();
+        });
+        
+        // החלפת מצב ערכת נושא (בהיר/כהה)
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const body = document.body;
+            const isDark = body.classList.contains('dark-theme');
+            
+            if (isDark) {
+                body.classList.remove('dark-theme');
+                this.innerHTML = '<i class="fas fa-moon"></i>';
+                appData.settings.theme = 'light';
+            } else {
+                body.classList.add('dark-theme');
+                this.innerHTML = '<i class="fas fa-sun"></i>';
+                appData.settings.theme = 'dark';
+            }
+            saveData();
+        });
+        
+        // בחירת יעד נפוץ
+        document.getElementById('commonDestinations').addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const price = selectedOption.getAttribute('data-price');
+                document.getElementById('destination').value = this.value;
+                document.getElementById('price').value = price;
+            }
+        });
+        
+        // בחירת יעד נפוץ בעריכה
+        document.getElementById('editCommonDestinations').addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const price = selectedOption.getAttribute('data-price');
+                document.getElementById('editDestination').value = this.value;
+                document.getElementById('editPrice').value = price;
+            }
+        });
+        
+        // שינוי חודש ביומן
+        document.getElementById('calendarMonth').addEventListener('change', function() {
+            renderCalendar();
+        });
+        
+        // שינוי תאריך בדוחות
+        document.getElementById('reportDate').addEventListener('change', function() {
+            renderDailyReport();
+        });
+        
+        // שינוי חודש בדוחות
+        document.getElementById('monthSelect').addEventListener('change', function() {
+            renderMonthlyReport();
+        });
+    }
+
+    // פונקציות מעבר בין מסכים
+    function showScreen(screenId) {
+        // הסתרת כל המסכים
+        document.querySelectorAll('.container').forEach(container => {
+            container.style.display = 'none';
+        });
+        
+        // הצגת המסך המבוקש
+        document.getElementById(screenId).style.display = 'block';
+        
+        // עדכון כפתור פעיל בתפריט
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // הפעלת כפתור ניווט מתאים
+        if (screenId === 'mainScreen') {
+            document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            renderRecentRides();
+        } else if (screenId === 'rideScreen') {
+            document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            renderAllRides();
+        } else if (screenId === 'calendarScreen') {
+            document.querySelectorAll('.nav-btn')[2].classList.add('active');
+            renderCalendar();
+        } else if (screenId === 'reportsScreen') {
+            document.querySelectorAll('.nav-btn')[3].classList.add('active');
+            renderReports();
+        } else if (screenId === 'settingsScreen') {
+            document.querySelectorAll('.nav-btn')[4].classList.add('active');
+        }
+    }
+
+    // פתיחת מודל הוספת נסיעה
+    function openAddRideModal() {
+        // איפוס הטופס
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerPhone').value = '';
+        document.getElementById('destination').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('notes').value = '';
+        document.getElementById('commonDestinations').selectedIndex = 0;
+        
+        // הגדרת תאריך ושעה נוכחיים
+        const now = new Date();
+        document.getElementById('rideDate').valueAsDate = now;
+        document.getElementById('rideTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        document.getElementById('addRideModal').style.display = 'flex';
+    }
+
+    // פתיחת מודל הוספת משימה
+    function openAddTaskModal() {
+        // הגדרת תאריך ושעה נוכחיים
+        const now = new Date();
+        document.getElementById('taskDate').valueAsDate = now;
+        document.getElementById('taskTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        document.getElementById('taskPrice').value = '';
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDescription').value = '';
+        
+        document.getElementById('addTaskModal').style.display = 'flex';
+    }
+
+    // סגירת מודל
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    // החלפת טאבים בדוחות
+    function switchTab(tabId) {
+        // הסתרת כל הטאבים
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // הסרת סימון פעיל מכל הטאבים
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // הצגת הטאב המבוקש
+        document.getElementById(tabId).classList.add('active');
+        
+        // סימון הטאב כפעיל
+        document.querySelectorAll('.tab').forEach(tab => {
+            if (tab.textContent === 'דוח יומי' && tabId === 'dailyReport') {
+                tab.classList.add('active');
+            } else if (tab.textContent === 'דוח חודשי' && tabId === 'monthlyReport') {
+                tab.classList.add('active');
+            } else if (tab.textContent === 'הכנסות והוצאות' && tabId === 'additionalEntries') {
+                tab.classList.add('active');
+            }
+        });
+        
+        // רענון הדוח אם צריך
+        if (tabId === 'dailyReport') {
+            renderDailyReport();
+        } else if (tabId === 'monthlyReport') {
+            renderMonthlyReport();
+        } else if (tabId === 'additionalEntries') {
+            renderAdditionalEntries();
+        }
+    }
+
+    // הוספת נסיעה
+    function addRide() {
+        const customerName = document.getElementById('customerName').value;
+        const customerPhone = document.getElementById('customerPhone').value;
+        const destination = document.getElementById('destination').value;
+        const price = document.getElementById('price').value;
+        const date = document.getElementById('rideDate').value;
+        const time = document.getElementById('rideTime').value;
+        const notes = document.getElementById('notes').value;
+        
+        if (!destination || !price) {
+            showNotification('נא למלא יעד ומחיר לנסיעה', 'error');
+            return;
+        }
+        
+        const newRide = {
+            id: Date.now(),
+            customerName,
+            customerPhone,
+            destination,
+            price: parseInt(price),
+            date,
+            time,
+            notes,
+            timestamp: new Date().toISOString()
+        };
+        
+        appData.rides.push(newRide);
+        saveData();
+        
+        showNotification('הנסיעה נוספה בהצלחה!', 'success');
+        closeModal('addRideModal');
+        
+        // רענון הרשימות
+        renderRecentRides();
+        renderAllRides();
+    }
+
+    // הוספת משימה
+    function addTask() {
+        const title = document.getElementById('taskTitle').value;
+        const date = document.getElementById('taskDate').value;
+        const time = document.getElementById('taskTime').value;
+        const price = document.getElementById('taskPrice').value;
+        const description = document.getElementById('taskDescription').value;
+        
+        if (!title) {
+            showNotification('נא למלא כותרת למשימה', 'error');
+            return;
+        }
+        
+        const newTask = {
+            id: Date.now(),
+            title,
+            date,
+            time,
+            price: price ? parseInt(price) : null,
+            description,
+            timestamp: new Date().toISOString(),
+            notified: false
+        };
+        
+        appData.tasks.push(newTask);
+        saveData();
+        
+        showNotification('המשימה נוספה בהצלחה!', 'success');
+        closeModal('addTaskModal');
+        
+        // רענון היומן
+        renderCalendar();
+    }
+
+    // פתיחת עריכת נסיעה
+    function openEditRideModal(rideId) {
+        const ride = appData.rides.find(r => r.id === rideId);
+        if (!ride) return;
+        
+        // מילוי הטופס בנתונים
+        document.getElementById('editRideId').value = ride.id;
+        document.getElementById('editCustomerName').value = ride.customerName || '';
+        document.getElementById('editCustomerPhone').value = ride.customerPhone || '';
+        document.getElementById('editDestination').value = ride.destination;
+        document.getElementById('editPrice').value = ride.price;
+        document.getElementById('editRideDate').value = ride.date;
+        document.getElementById('editRideTime').value = ride.time;
+        document.getElementById('editNotes').value = ride.notes || '';
+        document.getElementById('editCommonDestinations').selectedIndex = 0;
+        
+        document.getElementById('editRideModal').style.display = 'flex';
+    }
+
+    // עדכון נסיעה
+    function updateRide() {
+        const rideId = parseInt(document.getElementById('editRideId').value);
+        const customerName = document.getElementById('editCustomerName').value;
+        const customerPhone = document.getElementById('editCustomerPhone').value;
+        const destination = document.getElementById('editDestination').value;
+        const price = document.getElementById('editPrice').value;
+        const date = document.getElementById('editRideDate').value;
+        const time = document.getElementById('editRideTime').value;
+        const notes = document.getElementById('editNotes').value;
+        
+        if (!destination || !price) {
+            showNotification('נא למלא יעד ומחיר לנסיעה', 'error');
+            return;
+        }
+        
+        const rideIndex = appData.rides.findIndex(r => r.id === rideId);
+        if (rideIndex === -1) return;
+        
+        appData.rides[rideIndex] = {
+            ...appData.rides[rideIndex],
+            customerName,
+            customerPhone,
+            destination,
+            price: parseInt(price),
+            date,
+            time,
+            notes
+        };
+        
+        saveData();
+        
+        showNotification('הנסיעה עודכנה בהצלחה!', 'success');
+        closeModal('editRideModal');
+        
+        // רענון הרשימות
+        renderRecentRides();
+        renderAllRides();
+        renderCalendar();
+    }
+
+    // מחיקת נסיעה
+    function deleteRide(rideId) {
+        showConfirmation('האם אתה בטוח שברצונך למחוק את הנסיעה?', function() {
+            appData.rides = appData.rides.filter(r => r.id !== rideId);
+            saveData();
+            
+            showNotification('הנסיעה נמחקה בהצלחה', 'success');
+            
+            // רענון הרשימות
+            renderRecentRides();
+            renderAllRides();
+            renderCalendar();
+        });
+    }
+
+    // מחיקת משימה
+    function deleteTask(taskId) {
+        showConfirmation('האם אתה בטוח שברצונך למחוק את המשימה?', function() {
+            appData.tasks = appData.tasks.filter(t => t.id !== taskId);
+            saveData();
+            
+            showNotification('המשימה נמחקה בהצלחה', 'success');
+            
+            // רענון היומן
+            renderCalendar();
+        });
+    }
+
+    // הצגת טופס הכנסה נוספת
+    function showIncomeForm() {
+        document.getElementById('incomeForm').classList.remove('hidden');
+        document.getElementById('expenseForm').classList.add('hidden');
+    }
+
+    // הצגת טופס הוצאה נוספת
+    function showExpenseForm() {
+        document.getElementById('expenseForm').classList.remove('hidden');
+        document.getElementById('incomeForm').classList.add('hidden');
+    }
+
+    // הוספת הכנסה נוספת
+    function addIncome() {
+        const amount = document.getElementById('incomeAmount').value;
+        const description = document.getElementById('incomeDescription').value;
+        
+        if (!amount || !description) {
+            showNotification('נא למלא סכום ותיאור להכנסה', 'error');
+            return;
+        }
+        
+        const newIncome = {
+            id: Date.now(),
+            amount: parseInt(amount),
+            description,
+            date: new Date().toISOString().split('T')[0],
+            timestamp: new Date().toISOString()
+        };
+        
+        appData.additionalIncomes.push(newIncome);
+        saveData();
+        
+        showNotification('ההכנסה נוספה בהצלחה!', 'success');
+        
+        // איפוס הטופס
+        document.getElementById('incomeAmount').value = '';
+        document.getElementById('incomeDescription').value = '';
+        
+        // רענון הרשימה
+        renderAdditionalEntries();
+    }
+
+    // הוספת הוצאה נוספת
+    function addExpense() {
+        const amount = document.getElementById('expenseAmount').value;
+        const description = document.getElementById('expenseDescription').value;
+        
+        if (!amount || !description) {
+            showNotification('נא למלא סכום ותיאור להוצאה', 'error');
+            return;
+        }
+        
+        const newExpense = {
+            id: Date.now(),
+            amount: parseInt(amount),
+            description,
+            date: new Date().toISOString().split('T')[0],
+            timestamp: new Date().toISOString()
+        };
+        
+        appData.additionalExpenses.push(newExpense);
+        saveData();
+        
+        showNotification('ההוצאה נוספה בהצלחה!', 'success');
+        
+        // איפוס הטופס
+        document.getElementById('expenseAmount').value = '';
+        document.getElementById('expenseDescription').value = '';
+        
+        // רענון הרשימה
+        renderAdditionalEntries();
+    }
+
+    // מחיקת הכנסה נוספת
+    function deleteAdditionalIncome(incomeId) {
+        showConfirmation('האם אתה בטוח שברצונך למחוק את ההכנסה?', function() {
+            appData.additionalIncomes = appData.additionalIncomes.filter(i => i.id !== incomeId);
+            saveData();
+            renderAdditionalEntries();
+        });
+    }
+
+    // מחיקת הוצאה נוספת
+    function deleteAdditionalExpense(expenseId) {
+        showConfirmation('האם אתה בטוח שברצונך למחוק את ההוצאה?', function() {
+            appData.additionalExpenses = appData.additionalExpenses.filter(e => e.id !== expenseId);
+            saveData();
+            renderAdditionalEntries();
+        });
+    }
+
+    // הוספת יעד למחירון
+    function addPriceItem() {
+        const destination = document.getElementById('newDestination').value;
+        const price = document.getElementById('newPrice').value;
+        
+        if (!destination || !price) {
+            showNotification('נא למלא יעד ומחיר', 'error');
+            return;
+        }
+        
+        appData.priceList.push({
+            destination,
+            price: parseInt(price)
+        });
+        
+        saveData();
+        
+        // איפוס הטופס
+        document.getElementById('newDestination').value = '';
+        document.getElementById('newPrice').value = '';
+        
+        // רענון הרשימה
+        renderPriceList();
+        renderCommonDestinations();
+    }
+
+    // מחיקת יעד מהמחירון
+    function deletePriceItem(index) {
+        showConfirmation('האם אתה בטוח שברצונך למחוק את היעד מהמחירון?', function() {
+            appData.priceList.splice(index, 1);
+            saveData();
+            renderPriceList();
+            renderCommonDestinations();
+        });
+    }
+
+    // הגדרת ערכת נושא
+    function setTheme(theme) {
+        const body = document.body;
+        
+        // הסרת כל ערכות הצבעים
+        body.classList.remove('dark-theme', 'green-theme', 'purple-theme');
+        
+        if (theme === 'dark') {
+            body.classList.add('dark-theme');
+            document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+        } else if (theme === 'green') {
+            body.classList.add('green-theme');
+            document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i>';
+        } else if (theme === 'purple') {
+            body.classList.add('purple-theme');
+            document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i>';
+        } else {
+            document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i>';
+        }
+        
+        // שמירת העדפות בערכת נושא
+        appData.settings.theme = theme;
+        saveData();
+    }
+
+    // שמירת הגדרות מונה
+    function saveMeterSettings() {
+        const basePrice = parseFloat(document.getElementById('basePrice').value);
+        const pricePerMinute = parseFloat(document.getElementById('pricePerMinute').value);
+        const waitingPricePerMinute = parseFloat(document.getElementById('waitingPricePerMinute').value);
+        const freeWaitingMinutes = parseFloat(document.getElementById('freeWaitingMinutes').value);
+        
+        appData.meterSettings = {
+            basePrice,
+            pricePerMinute,
+            waitingPricePerMinute,
+            freeWaitingMinutes
+        };
+        
+        // עדכון משתנה הגלובלי
+        freeWaitingTime = freeWaitingMinutes * 60;
+        
+        saveData();
+        showNotification('הגדרות המונה נשמרו בהצלחה!', 'success');
+    }
+
+    // הצגת עזרה למסך הנוכחי
+    function showHelpForCurrentScreen() {
+        const currentScreen = getCurrentScreen();
+        showHelpModal(currentScreen);
+    }
+
+    // זיהוי המסך הנוכחי
+    function getCurrentScreen() {
+        const screens = ['mainScreen', 'rideScreen', 'calendarScreen', 'reportsScreen', 'settingsScreen'];
+        for (const screen of screens) {
+            if (document.getElementById(screen).style.display === 'block') {
+                return screen;
+            }
+        }
+        return 'mainScreen';
+    }
+
+    // הצגת חלון עזרה לפי המסך
+    function showHelpModal(screen) {
+        let title = '';
+        let content = '';
+        
+        switch(screen) {
+            case 'mainScreen':
+                title = 'עזרה - מסך ראשי';
+                content = `
+                    <h3>ברוכים הבאים למסך הראשי של DriveMaster!</h3>
+                    <p>כאן תוכלו לגשת לכל הפיצ'רים העיקריים של האפליקציה:</p>
+                    <ul>
+                        <li><strong>נסיעות</strong> - ניהול ותיעוד נסיעות שביצעתם</li>
+                        <li><strong>יומן</strong> - תכנון נסיעות ומשימות עתידיות</li>
+                        <li><strong>דוחות</strong> - ניתוח נתונים והכנסות לפי תקופות</li>
+                        <li><strong>הגדרות</strong> - התאמה אישית של האפליקציה והגדרות מונה</li>
+                    </ul>
+                    <p>בתחתית המסך תראו את הנסיעות האחרונות שלכם, ויכול לעזור לכם לעקוב אחר הפעילות האחרונה.</p>
+                    <p>לחיצה על כל נסיעה תציג לכם פרטים נוספים עליה.</p>
+                `;
+                break;
+                
+            case 'rideScreen':
+                title = 'עזרה - ניהול נסיעות';
+                content = `
+                    <h3>מסך ניהול נסיעות</h3>
+                    <p>במסך זה תוכלו לנהל את כל הנסיעות שלכם:</p>
+                    <ul>
+                        <li><strong>התחל נסיעה לפי מונה</strong> - פתיחת מונה נסיעה למדידת זמן, מרחק ומחיר אוטומטי</li>
+                        <li><strong>הוספת נסיעה ידנית</strong> - על ידי לחיצה על הכפתור הירוק עם הסימן "+"</li>
+                        <li><strong>עריכת נסיעה</strong> - לחיצה על כפתור העריכה לצד כל נסיעה</li>
+                        <li><strong>מחיקת נסיעה</strong> - לחיצה על כפתור המחיקה לצד כל נסיעה</li>
+                    </ul>
+                    <p>לכל נסיעה ניתן להוסיף יעד, מחיר, תאריך, שעה והערות נוספות.</p>
+                    <p>כדי להוסיף נסיעה במהירות, ניתן להשתמש ברשימת היעדים הנפוצים מההגדרות.</p>
+                `;
+                break;
+                
+            case 'calendarScreen':
+                title = 'עזרה - יומן נסיעות';
+                content = `
+                    <h3>מסך יומן נסיעות</h3>
+                    <p>במסך זה תוכלו לתכנן נסיעות ומשימות עתידיות:</p>
+                    <ul>
+                        <li><strong>בחירת חודש</strong> - באמצעות התפריט בראש העמוד ניתן לבחור חודש להצגה</li>
+                        <li><strong>ימים עם פעילות</strong> - ימים עם נסיעות או משימות מסומנים בנקודות צבעוניות</li>
+                        <li><strong>צפייה בפעילות יומית</strong> - לחיצה על יום תציג את כל הנסיעות והמשימות לאותו יום</li>
+                        <li><strong>הוספת משימה</strong> - באמצעות הכפתור "הוסף משימה ליומן"</li>
+                    </ul>
+                    <p>משימות יכולות להיות נסיעות מתוכננות, פגישות, או כל אירוע אחר שתרצו לתעד.</p>
+                    <p>למשימות עם מחיר תוכלו להמיר לנסיעה ישירות מהיומן.</p>
+                `;
+                break;
+                
+            case 'reportsScreen':
+                title = 'עזרה - דוחות וניתוחים';
+                content = `
+                    <h3>מסך דוחות וניתוחים</h3>
+                    <p>במסך זה תוכלו לצפות בסטטיסטיקות ובדוחות מפורטים:</p>
+                    <ul>
+                        <li><strong>דוח יומי</strong> - הצגת נסיעות והכנסות ליום ספציפי</li>
+                        <li><strong>דוח חודשי</strong> - גרף וטבלה של ההכנסות לפי ימים在整个חודש</li>
+                        <li><strong>הכנסות והוצאות נוספות</strong> - ניהול הכנסות והוצאות שאינן נסיעות</li>
+                    </ul>
+                    <p>בחלק העליון של המסך תראו סיכום חודשי של:</p>
+                    <ul>
+                        <li>הכנסות חודשיות מנסיעות והכנסות נוספות</li>
+                        <li>הוצאות חודשיות</li>
+                        <li>הכנסה נטו (הכנסות פחות הוצאות)</li>
+                        <li>מספר הנסיעות בחודש</li>
+                    </ul>
+                `;
+                break;
+                
+            case 'settingsScreen':
+                title = 'עזרה - הגדרות מערכת';
+                content = `
+                    <h3>מסך הגדרות מערכת</h3>
+                    <p>במסך זה תוכלו להתאים אישית את האפליקציה לצרכים שלכם:</p>
+                    <ul>
+                        <li><strong>פרטים אישיים</strong> - עדכון שם הנהג ומספר הטלפון</li>
+                        <li><strong>מחירון נסיעות</strong> - הוספה ומחיקה של יעדים נפוצים עם מחירים קבועים</li>
+                        <li><strong>הגדרות מונה</strong> - התאמת תעריפי המונה לפי הצרכים שלכם</li>
+                        <li><strong>עיצוב האפליקציה</strong> - שינוי ערכת הצבעים של האפליקציה</li>
+                    </ul>
+                    <p><strong>הגדרות מונה:</strong></p>
+                    <ul>
+                        <li>מחיר התחלתי - הסכום הבסיסי לתחילת נסיעה</li>
+                        <li>מחיר לדקת נסיעה - התעריף עבור כל דקת נסיעה</li>
+                        <li>מחיר לדקת המתנה - התעריף עבור דקת המתנה (לאחר זמן החינם)</li>
+                        <li>זמן המתנה חינם - מספר הדקות להן לא יחויב תשלום על המתנה</li>
+                    </ul>
+                `;
+                break;
+                
+            default:
+                title = 'עזרה - DriveMaster';
+                content = `
+                    <h3>ברוכים הבאים ל-DriveMaster!</h3>
+                    <p>אפליקציה לניהול נסיעות מקצועית המיועדת לנהגי מוניות ושירותי הסעה.</p>
+                    <p>האפליקציה כוללת מגוון פיצ'רים שיעזרו לכם לנהל את העסק:</p>
+                    <ul>
+                        <li>ניהול ותיעוד נסיעות</li>
+                        <li>יומן נסיעות ומשימות</li>
+                        <li>דוחות וניתוח הכנסות</li>
+                        <li>מערכת מונה משולבת</li>
+                        <li>התאמה אישית מלאה</li>
+                    </ul>
+                    <p>לכל שאלה או בעיה, ניתן ליצור קשר עם התמיכה הטכנית:</p>
+                    <p><strong>טלפון:</strong> 053-5425454</p>
+                    <p><strong>אימייל:</strong> simhaau1@gmail.com</p>
+                `;
+        }
+        
+        document.getElementById('helpModalTitle').textContent = title;
+        document.getElementById('helpModalContent').innerHTML = content;
+        document.getElementById('helpModal').style.display = 'flex';
+    }
+
+    // פונקציות למונה נסיעות
+    function startMeterRide() {
+        // איפוס משתני המונה
+        meterStartTime = new Date();
+        meterPaused = false;
+        totalPausedTime = 0;
+        rideTimerValue = 0;
+        waitingTimerValue = 0;
+        isWaiting = false;
+        
+        // איפוס תצוגת המונה
+        document.getElementById('rideTimeDisplay').textContent = '00:00';
+        document.getElementById('waitingTimeDisplay').textContent = '00:00';
+        document.getElementById('ridePrice').textContent = '0₪';
+        
+        // עדכון כפתורים
+        document.getElementById('pauseResumeBtn').innerHTML = '<i class="fas fa-pause"></i> השהה';
+        document.getElementById('waitingBtn').innerHTML = '<i class="fas fa-clock"></i> המתנה';
+        document.getElementById('waitingBtn').classList.remove('meter-btn-danger');
+        document.getElementById('waitingBtn').classList.add('meter-btn-waiting');
+        
+        // הצגת המונה
+        document.getElementById('meterContainer').style.display = 'block';
+        
+        // התחלת טיימר
+        clearInterval(meterInterval);
+        meterInterval = setInterval(updateMeter, 1000);
+    }
+
+    function updateMeter() {
+        if (meterPaused) return;
+        
+        const now = new Date();
+        const elapsedTime = (now - meterStartTime - totalPausedTime) / 1000; // בשניות
+        rideTimerValue = elapsedTime;
+        
+        // חישוב זמן נסיעה
+        const minutes = Math.floor(elapsedTime / 60);
+        const seconds = Math.floor(elapsedTime % 60);
+        document.getElementById('rideTimeDisplay').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        // חישוב מחיר
+        calculatePrice();
+    }
+
+    function calculatePrice() {
+        const basePrice = appData.meterSettings.basePrice;
+        const timePrice = (rideTimerValue / 60) * appData.meterSettings.pricePerMinute;
+        
+        // חישוב מחיר המתנה (רק מעבר לזמן החינם)
+        const netWaitingTime = Math.max(0, waitingTimerValue - freeWaitingTime);
+        const waitingPrice = (netWaitingTime / 60) * appData.meterSettings.waitingPricePerMinute;
+        
+        const totalPrice = basePrice + timePrice + waitingPrice;
+        document.getElementById('ridePrice').textContent = `${Math.round(totalPrice)}₪`;
+    }
+
+    function toggleMeterPause() {
+        meterPaused = !meterPaused;
+        
+        if (meterPaused) {
+            meterPauseTime = new Date();
+            document.getElementById('pauseResumeBtn').innerHTML = '<i class="fas fa-play"></i> המשך';
+        } else {
+            totalPausedTime += (new Date() - meterPauseTime);
+            document.getElementById('pauseResumeBtn').innerHTML = '<i class="fas fa-pause"></i> השהה';
+        }
+    }
+
+    function toggleWaiting() {
+        if (isWaiting) {
+            stopWaiting();
+        } else {
+            startWaiting();
+        }
+    }
+
+    function startWaiting() {
+        isWaiting = true;
+        waitingStartTime = new Date();
+        document.getElementById('waitingBtn').innerHTML = '<i class="fas fa-stop"></i> סיום המתנה';
+        document.getElementById('waitingBtn').classList.remove('meter-btn-waiting');
+        document.getElementById('waitingBtn').classList.add('meter-btn-danger');
+        
+        waitingInterval = setInterval(updateWaitingTime, 1000);
+    }
+
+    function stopWaiting() {
+        isWaiting = false;
+        clearInterval(waitingInterval);
+        document.getElementById('waitingBtn').innerHTML = '<i class="fas fa-clock"></i> המתנה';
+        document.getElementById('waitingBtn').classList.remove('meter-btn-danger');
+        document.getElementById('waitingBtn').classList.add('meter-btn-waiting');
+    }
+
+    function updateWaitingTime() {
+        const now = new Date();
+        waitingTimerValue = Math.floor((now - waitingStartTime) / 1000);
+        
+        const minutes = Math.floor(waitingTimerValue / 60);
+        const seconds = waitingTimerValue % 60;
+        document.getElementById('waitingTimeDisplay').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        calculatePrice();
+    }
+
+    function endMeterRide() {
+        clearInterval(meterInterval);
+        clearInterval(waitingInterval);
+        
+        // חישוב מחיר סופי
+        calculatePrice();
+        const finalPrice = parseFloat(document.getElementById('ridePrice').textContent);
+        document.getElementById('finalPrice').value = finalPrice;
+        
+        // פתיחת מודל סיום נסיעה
+        document.getElementById('endRideModal').style.display = 'flex';
+    }
+
+    function closeMeter() {
+        clearInterval(meterInterval);
+        clearInterval(waitingInterval);
+        document.getElementById('meterContainer').style.display = 'none';
+    }
+
+    function saveMeterRide() {
+        const customerName = document.getElementById('customerNameMeter').value;
+        const customerPhone = document.getElementById('customerPhoneMeter').value;
+        const destination = document.getElementById('meterDestination').value;
+        const discount = parseFloat(document.getElementById('meterDiscount').value) || 0;
+        const finalPrice = parseFloat(document.getElementById('finalPrice').value);
+        const notes = document.getElementById('meterNotes').value;
+        
+        if (!destination) {
+            showNotification('נא למלא יעד נסיעה', 'error');
+            return;
+        }
+        
+        const netPrice = finalPrice - discount;
+        
+        const newRide = {
+            id: Date.now(),
+            customerName,
+            customerPhone,
+            destination,
+            price: netPrice,
+            date: new Date().toISOString().split('T')[0],
+            time: new Date().toLocaleTimeString('he-IL', {hour: '2-digit', minute: '2-digit'}),
+            notes: notes || `נסיעה לפי מונה. מחיר התחלתי: ${finalPrice}₪, הנחה: ${discount}₪`,
+            timestamp: new Date().toISOString()
+        };
+        
+        appData.rides.push(newRide);
+        saveData();
+        
+        showNotification('נסיעת המונה נשמרה בהצלחה!', 'success');
+        closeModal('endRideModal');
+        closeMeter();
+        
+        // רענון הרשימות
+        renderRecentRides();
+        renderAllRides();
+    }
+
+    // בדיקת התראות למשימות
+    function checkTaskNotifications() {
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const currentDate = now.toISOString().split('T')[0];
+        
+        appData.tasks.forEach(task => {
+            if (task.notified) return;
+            
+            const taskTime = task.time.split(':');
+            const taskMinutes = parseInt(taskTime[0]) * 60 + parseInt(taskTime[1]);
+            const timeDiff = taskMinutes - currentTime;
+            
+            // אם המשימה מתוזמנת להיום ועוד 5 דקות או פחות
+            if (task.date === currentDate && timeDiff <= 5 && timeDiff >= 0) {
+                showTaskNotification(task);
+                task.notified = true;
+                saveData();
+            }
+        });
+    }
+
+    // הצגת התראה על משימה
+    function showTaskNotification(task) {
+        const notificationContainer = document.getElementById('notificationContainer');
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${task.price ? 'notification-ride' : ''}`;
+        notification.innerHTML = `
+            <div class="notification-icon">
+                <i class="${task.price ? 'fas fa-taxi' : 'fas fa-calendar-check'}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">תזכורת: ${task.title}</div>
+                <div class="notification-message">
+                    המשימה מתוזמנת ל-${task.time}
+                    ${task.price ? `<br>מחיר: ${task.price}₪` : ''}
+                </div>
+                ${task.price ? `
+                <div class="notification-buttons">
+                    <button class="btn btn-sm btn-success" onclick="convertTaskToRide(${task.id})">
+                        <i class="fas fa-taxi"></i> המר לנסיעה
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="closeNotification(this)">
+                        <i class="fas fa-times"></i> סגור
+                    </button>
+                </div>
+                ` : `
+                <div class="notification-buttons">
+                    <button class="btn btn-sm btn-outline" onclick="closeNotification(this)">
+                        <i class="fas fa-times"></i> סגור
+                    </button>
+                </div>
+                `}
+            </div>
+        `;
+        
+        notificationContainer.appendChild(notification);
+        
+        // הסרה אוטומטית לאחר 30 שניות
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 30000);
+    }
+
+    // המרת משימה לנסיעה
+    function convertTaskToRide(taskId) {
+        const task = appData.tasks.find(t => t.id === taskId);
+        if (!task) return;
+        
+        if (!task.price) {
+            showNotification('למשימה זו לא הוגדר מחיר. נא להזין מחיר לפני ההמרה.', 'error');
+            return;
+        }
+        
+        const newRide = {
+            id: Date.now(),
+            destination: task.title,
+            price: task.price,
+            date: task.date,
+            time: task.time,
+            notes: task.description || `נוצר מהמשימה: ${task.title}`,
+            timestamp: new Date().toISOString()
+        };
+        
+        appData.rides.push(newRide);
+        appData.tasks = appData.tasks.filter(t => t.id !== taskId);
+        saveData();
+        
+        showNotification('המשימה הומרה לנסיעה בהצלחה!', 'success');
+        
+        // סגירת ההתראה
+        const notifications = document.querySelectorAll('.notification');
+        notifications.forEach(notification => {
+            if (notification.querySelector('.notification-title').textContent.includes(task.title)) {
+                notification.remove();
+            }
+        });
+        
+        // רענון הרשימות
+        renderRecentRides();
+        renderAllRides();
+        renderCalendar();
+    }
+
+    // סגירת התראה
+    function closeNotification(button) {
+        const notification = button.closest('.notification');
+        if (notification) {
+            notification.remove();
+        }
+    }
+
+    // הצגת הודעת מערכת
+    function showNotification(message, type = 'info') {
+        const notificationContainer = document.getElementById('notificationContainer');
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type === 'error' ? 'notification-error' : (type === 'success' ? 'notification-ride' : '')}`;
+        notification.innerHTML = `
+            <div class="notification-icon">
+                <i class="${type === 'error' ? 'fas fa-exclamation-circle' : (type === 'success' ? 'fas fa-check-circle' : 'fas fa-info-circle')}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-message">${message}</div>
+            </div>
+            <button class="notification-close" onclick="closeNotification(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        notificationContainer.appendChild(notification);
+        
+        // הסרה אוטומטית לאחר 5 שניות
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    function showConfirmation(message, onConfirm) {
+    const notificationContainer = document.getElementById('notificationContainer');
+
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+
+    const icon = document.createElement('div');
+    icon.className = 'notification-icon';
+    icon.innerHTML = '<i class="fas fa-question-circle"></i>';
+
+    const content = document.createElement('div');
+    content.className = 'notification-content';
+
+    const msg = document.createElement('div');
+    msg.className = 'notification-message';
+    msg.textContent = message;
+
+    const buttonsWrap = document.createElement('div');
+    buttonsWrap.className = 'notification-buttons';
+
+    // כפתור אישור
+    const okBtn = document.createElement('button');
+    okBtn.className = 'btn btn-sm btn-success';
+    okBtn.type = 'button';
+    okBtn.innerHTML = '<i class="fas fa-check"></i> אישור';
+    okBtn.addEventListener('click', () => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+        if (typeof onConfirm === 'function') {
+            onConfirm(); // כאן יופעל deleteRide / deleteTask / deleteTarget
+        }
+    });
+
+    // כפתור ביטול
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-sm btn-danger';
+    cancelBtn.type = 'button';
+    cancelBtn.innerHTML = '<i class="fas fa-times"></i> ביטול';
+    cancelBtn.addEventListener('click', () => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    });
+
+    buttonsWrap.appendChild(okBtn);
+    buttonsWrap.appendChild(cancelBtn);
+    content.appendChild(msg);
+    content.appendChild(buttonsWrap);
+    notification.appendChild(icon);
+    notification.appendChild(content);
+
+    notificationContainer.appendChild(notification);
+}
+
+    // יצירת חשבונית
+    function createInvoice(rideId) {
+        const ride = appData.rides.find(r => r.id === rideId);
+        if (!ride) return;
+        
+        currentRideForInvoice = ride;
+        
+        const invoiceHTML = `
+            <div class="invoice-header">
+                <div class="invoice-logo">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="invoice-title">חשבונית מס</div>
+                <div>מספר: ${ride.id}</div>
+            </div>
+            
+            <div class="invoice-details">
+                <div class="invoice-section">
+                    <div class="invoice-label">ספק:</div>
+                    <div class="invoice-value">${appData.driverName}</div>
+                    <div class="invoice-value">${appData.phoneNumber || '054-1234567'}</div>
+                </div>
+                
+                <div class="invoice-section">
+                    <div class="invoice-label">לקוח:</div>
+                    <div class="invoice-value">${ride.customerName || 'לקוח כללי'}</div>
+                    <div class="invoice-value">${ride.customerPhone || 'לא צוין'}</div>
+                </div>
+            </div>
+            
+            <div class="invoice-section">
+                <div class="invoice-label">תאריך הנסיעה:</div>
+                <div class="invoice-value">${ride.date} ${ride.time}</div>
+            </div>
+            
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>תיאור</th>
+                        <th>כמות</th>
+                        <th>מחיר</th>
+                        <th>סכום</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>נסיעה ל${ride.destination}</td>
+                        <td>1</td>
+                        <td>${ride.price}₪</td>
+                        <td>${ride.price}₪</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="invoice-total">
+                <div class="invoice-label">סך הכל לתשלום:</div>
+                <div class="invoice-value">${ride.price}₪</div>
+            </div>
+            
+            <div class="invoice-footer">
+                <p>תודה שנסיעה איתנו!</p>
+                <p>DriveMaster - ניהול נסיעות מקצועי</p>
+            </div>
+        `;
+        
+        document.getElementById('invoiceContent').innerHTML = invoiceHTML;
+        document.getElementById('invoiceModal').style.display = 'flex';
+    }
+
+    // יצירת קבלה
+    function createReceipt(rideId) {
+        const ride = appData.rides.find(r => r.id === rideId);
+        if (!ride) return;
+        
+        currentRideForInvoice = ride;
+        
+        // איפוס שדות הקבלה
+        document.getElementById('receivedAmount').value = ride.price;
+        
+        const receiptHTML = `
+            <div class="invoice-header">
+                <div class="invoice-logo">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="invoice-title">קבלה</div>
+                <div>מספר: ${ride.id}</div>
+            </div>
+            
+            <div class="invoice-details">
+                <div class="invoice-section">
+                    <div class="invoice-label">ספק:</div>
+                    <div class="invoice-value">${appData.driverName}</div>
+                    <div class="invoice-value">${appData.phoneNumber || '054-1234567'}</div>
+                </div>
+                
+                <div class="invoice-section">
+                    <div class="invoice-label">לקוח:</div>
+                    <div class="invoice-value">${ride.customerName || 'לקוח כללי'}</div>
+                    <div class="invoice-value">${ride.customerPhone || 'לא צוין'}</div>
+                </div>
+            </div>
+            
+            <div class="invoice-section">
+                <div class="invoice-label">תאריך הנסיעה:</div>
+                <div class="invoice-value">${ride.date} ${ride.time}</div>
+            </div>
+            
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>תיאור</th>
+                        <th>סכום</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>נסיעה ל${ride.destination}</td>
+                        <td>${ride.price}₪</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="invoice-total">
+                <div class="invoice-label">סך הכל לתשלום:</div>
+                <div class="invoice-value">${ride.price}₪</div>
+            </div>
+            
+            <div class="invoice-footer">
+                <p>תודה שנסיעה איתנו!</p>
+                <p>DriveMaster - ניהול נסיעות מקצועי</p>
+            </div>
+        `;
+        
+        document.getElementById('receiptContent').innerHTML = receiptHTML;
+        document.getElementById('receiptModal').style.display = 'flex';
+    }
+
+    // הדפסת חשבונית
+    function printInvoice() {
+        const printContent = document.getElementById('invoiceContent').innerHTML;
+        const originalContent = document.body.innerHTML;
+        
+        document.body.innerHTML = printContent;
+        window.print();
+        document.body.innerHTML = originalContent;
+        
+        // רענון המסך לאחר הדפסה
+        location.reload();
+    }
+
+    // הדפסת קבלה
+    function printReceipt() {
+        const receivedAmount = document.getElementById('receivedAmount').value;
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const paymentMethodText = getPaymentMethodText(paymentMethod);
+        
+        // עדכון הקבלה עם פרטי התשלום
+        const receiptElement = document.getElementById('receiptContent');
+        const totalElement = receiptElement.querySelector('.invoice-total');
+        
+        totalElement.innerHTML += `
+            <div class="invoice-label">שולם ב${paymentMethodText}:</div>
+            <div class="invoice-value">${receivedAmount}₪</div>
+        `;
+        
+        const printContent = receiptElement.innerHTML;
+        const originalContent = document.body.innerHTML;
+        
+        document.body.innerHTML = printContent;
+        window.print();
+        document.body.innerHTML = originalContent;
+        
+        // רענון המסך לאחר הדפסה
+        location.reload();
+    }
+
+    // שליחת חשבונית
+    function sendInvoice() {
+        if (!currentRideForInvoice || !currentRideForInvoice.customerPhone) {
+            showNotification('לא ניתן לשלוח הודעה ללא מספר טלפון של הלקוח', 'error');
+            return;
+        }
+        
+        const message = `היי ${currentRideForInvoice.customerName || 'לקוח'},\nהחשבונית שלך מהנסיעה ל${currentRideForInvoice.destination} מוכנה.\nסכום: ${currentRideForInvoice.price}₪\nתאריך: ${currentRideForInvoice.date}\nתודה שנסיעה איתנו!`;
+        
+        document.getElementById('messageText').value = message;
+        document.getElementById('messageModalTitle').textContent = 'שליחת חשבונית ללקוח';
+        
+        closeModal('invoiceModal');
+        document.getElementById('messageModal').style.display = 'flex';
+    }
+
+    // שליחת קבלה
+    function sendReceipt() {
+        if (!currentRideForInvoice || !currentRideForInvoice.customerPhone) {
+            showNotification('לא ניתן לשלוח הודעה ללא מספר טלפון של הלקוח', 'error');
+            return;
+        }
+        
+        const receivedAmount = document.getElementById('receivedAmount').value;
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const paymentMethodText = getPaymentMethodText(paymentMethod);
+        
+        const message = `היי ${currentRideForInvoice.customerName || 'לקוח'},\nהקבלה שלך מהנסיעה ל${currentRideForInvoice.destination} מוכנה.\nסכום: ${currentRideForInvoice.price}₪\nשולם: ${receivedAmount}₪ ב${paymentMethodText}\nתאריך: ${currentRideForInvoice.date}\nתודה שנסיעה איתנו!`;
+        
+        document.getElementById('messageText').value = message;
+        document.getElementById('messageModalTitle').textContent = 'שליחת קבלה ללקוח';
+        
+        closeModal('receiptModal');
+        document.getElementById('messageModal').style.display = 'flex';
+    }
+
+    // שליחת SMS
+    function sendSMS() {
+        const message = document.getElementById('messageText').value;
+        
+        if (!message) {
+            showNotification('נא להזין הודעת SMS', 'error');
+            return;
+        }
+        
+        // הדמיה של שליחת SMS
+        showNotification('פונקציה זו עדיין לא עובדת!', 'success');
+        closeModal('messageModal');
+        
+        // במקום אמיתי כאן תהיה קריאה ל-API של שליחת SMS
+        console.log('SMS נשלח ל:', currentRideForInvoice.customerPhone);
+        console.log('תוכן ההודעה:', message);
+    }
+
+    // קבלת טקסט עבור שיטת תשלום
+    function getPaymentMethodText(method) {
+        switch(method) {
+            case 'cash': return 'מזומן';
+            case 'credit': return 'אשראי';
+            case 'bit': return 'ביט';
+            case 'paybox': return 'פייבקס';
+            default: return 'מזומן';
+        }
+    }
+
+    // פונקציות רינדור
+    function renderRecentRides() {
+        const container = document.getElementById('recentRidesList');
+        if (!container) return;
+        
+        // מיון נסיעות לפי תאריך (הכי חדשות ראשונות)
+        const sortedRides = [...appData.rides].sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        ).slice(0, 3); // רק 3 הנסיעות האחרונות
+        
+        if (sortedRides.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-taxi"></i>
+                    <p>אין נסיעות עדיין</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = sortedRides.map(ride => `
+            <div class="ride-card" onclick="openRideDetails(${ride.id})">
+                <div class="ride-header">
+                    <div class="ride-destination">${ride.destination}</div>
+                    <div class="ride-price">${ride.price}₪</div>
+                </div>
+                <div class="ride-details">
+                    <div><i class="fas fa-calendar-alt"></i> ${ride.date}</div>
+                    <div><i class="fas fa-clock"></i> ${ride.time}</div>
+                </div>
+                ${ride.notes ? `<div class="ride-notes">${ride.notes}</div>` : ''}
+                <div class="ride-actions">
+                    <button class="btn btn-outline btn-sm action-btn" onclick="createInvoice(${ride.id})">
+                        <i class="fas fa-file-invoice"></i> חשבונית
+                    </button>
+                    <button class="btn btn-success btn-sm action-btn" onclick="createReceipt(${ride.id})">
+                        <i class="fas fa-receipt"></i> קבלה
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderAllRides() {
+        const container = document.getElementById('allRidesList');
+        if (!container) return;
+        
+        // מיון נסיעות לפי תאריך (הכי חדשות ראשונות)
+        const sortedRides = [...appData.rides].sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        
+        if (sortedRides.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-taxi"></i>
+                    <p>אין נסיעות עדיין</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = sortedRides.map(ride => `
+            <div class="ride-card">
+                <div class="ride-header">
+                    <div class="ride-destination">${ride.destination}</div>
+                    <div class="ride-price">${ride.price}₪</div>
+                </div>
+                <div class="ride-details">
+                    <div><i class="fas fa-calendar-alt"></i> ${ride.date}</div>
+                    <div><i class="fas fa-clock"></i> ${ride.time}</div>
+                </div>
+                ${ride.customerName ? `<div class="ride-details"><i class="fas fa-user"></i> ${ride.customerName} - ${ride.customerPhone || 'לא צוין'}</div>` : ''}
+                ${ride.notes ? `<div class="ride-notes">${ride.notes}</div>` : ''}
+                <div class="ride-actions">
+                    <button class="btn btn-outline btn-sm action-btn" onclick="openEditRideModal(${ride.id})">
+                        <i class="fas fa-edit"></i> עריכה
+                    </button>
+                    <button class="btn btn-danger btn-sm action-btn" onclick="deleteRide(${ride.id})">
+                        <i class="fas fa-trash"></i> מחיקה
+                    </button>
+                    <button class="btn btn-outline btn-sm action-btn" onclick="createInvoice(${ride.id})">
+                        <i class="fas fa-file-invoice"></i> חשבונית
+                    </button>
+                    <button class="btn btn-success btn-sm action-btn" onclick="createReceipt(${ride.id})">
+                        <i class="fas fa-receipt"></i> קבלה
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderCalendar() {
+        const container = document.getElementById('calendarContainer');
+        const monthInput = document.getElementById('calendarMonth');
+        if (!container || !monthInput) return;
+        
+        const [year, month] = monthInput.value.split('-').map(Number);
+        const firstDay = new Date(year, month - 1, 1);
+        const lastDay = new Date(year, month, 0);
+        const daysInMonth = lastDay.getDate();
+        const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // ימים בעברית (מתחיל ביום א')
+        const daysOfWeek = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+        
+        let calendarHTML = '';
+        
+        // הוספת כותרות ימי השבוע
+        daysOfWeek.forEach(day => {
+            calendarHTML += `<div class="calendar-header">${day}</div>`;
+        });
+        
+        // ריווח לימים לפני תחילת החודש
+        for (let i = 0; i < (firstDayOfWeek + 6) % 7; i++) {
+            calendarHTML += `<div class="calendar-day"></div>`;
+        }
+        
+        // הוספת ימי החודש
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const hasRides = appData.rides.some(ride => ride.date === dateStr);
+            const hasTasks = appData.tasks.some(task => task.date === dateStr);
+            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            
+            let dayClass = '';
+            if (hasRides && hasTasks) {
+                dayClass = 'has-rides has-tasks';
+            } else if (hasRides) {
+                dayClass = 'has-rides';
+            } else if (hasTasks) {
+                dayClass = 'has-tasks';
+            }
+            
+            calendarHTML += `
+                <div class="calendar-day ${dayClass} ${isToday ? 'active' : ''}" onclick="showDayRides('${dateStr}')">
+                    ${day}
+                </div>
+            `;
+        }
+        
+        container.innerHTML = calendarHTML;
+        
+        // הצגת נסיעות היום אם יש
+        const today = new Date().toISOString().split('T')[0];
+        showDayRides(today);
+    }
+
+    function showDayRides(dateStr) {
+        const container = document.getElementById('dayRidesContainer');
+        if (!container) return;
+        
+        const dayRides = appData.rides.filter(ride => ride.date === dateStr);
+        const dayTasks = appData.tasks.filter(task => task.date === dateStr);
+        
+        if (dayRides.length === 0 && dayTasks.length === 0) {
+            container.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: var(--primary);">פעילויות ליום ${formatDate(dateStr)}</h3>
+                <div class="empty-state">
+                    <i class="fas fa-calendar-day"></i>
+                    <p>אין פעילויות ביום זה</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let contentHTML = `<h3 style="margin-bottom: 15px; color: var(--primary);">פעילויות ליום ${formatDate(dateStr)}</h3>`;
+        
+        if (dayRides.length > 0) {
+            contentHTML += `
+                <h4 style="margin: 15px 0 10px; color: var(--success);">נסיעות</h4>
+                <div class="ride-list">
+                    ${dayRides.map(ride => `
+                        <div class="ride-card">
+                            <div class="ride-header">
+                                <div class="ride-destination">${ride.destination}</div>
+                                <div class="ride-price">${ride.price}₪</div>
+                            </div>
+                            <div class="ride-details">
+                                <div><i class="fas fa-clock"></i> ${ride.time}</div>
+                                <div><i class="fas fa-user"></i> ${ride.customerName || 'לקוח כללי'} - ${ride.customerPhone || 'לא צוין'}</div>
+                            </div>
+                            ${ride.notes ? `<div class="ride-notes">${ride.notes}</div>` : ''}
+                            <div class="ride-actions">
+                                <button class="btn btn-outline btn-sm action-btn" onclick="createInvoice(${ride.id})">
+                                    <i class="fas fa-file-invoice"></i> חשבונית
+                                </button>
+                                <button class="btn btn-success btn-sm action-btn" onclick="createReceipt(${ride.id})">
+                                    <i class="fas fa-receipt"></i> קבלה
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        if (dayTasks.length > 0) {
+            contentHTML += `
+                <h4 style="margin: 15px 0 10px; color: var(--warning);">משימות</h4>
+                <div class="task-list">
+                    ${dayTasks.map(task => `
+                        <div class="task-item">
+                            <div class="task-info">
+                                <div class="task-title">${task.title}</div>
+                                <div class="task-time">${task.time} - ${task.description || 'אין תיאור'}</div>
+                                ${task.price ? `<div class="task-price" style="color: var(--success); margin-top: 5px;">מחיר: ${task.price}₪</div>` : ''}
+                            </div>
+                            <div class="task-actions">
+                                ${task.price ? `
+                                <button class="btn btn-sm btn-success" onclick="convertTaskToRide(${task.id})" style="padding: 3px 8px;">
+                                    <i class="fas fa-taxi"></i>
+                                </button>
+                                ` : ''}
+                                <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})" style="padding: 3px 8px;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        container.innerHTML = contentHTML;
+    }
+
+    function renderReports() {
+        renderStats();
+        renderDailyReport();
+        renderMonthlyReport();
+        renderAdditionalEntries();
+    }
+
+    function renderStats() {
+        const container = document.getElementById('statsContainer');
+        if (!container) return;
+        
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        
+        // חישוב סטטיסטיקות חודשיות
+        const monthlyRides = appData.rides.filter(ride => {
+            const rideDate = new Date(ride.date);
+            return rideDate.getMonth() === currentMonth && rideDate.getFullYear() === currentYear;
+        });
+        
+        const monthlyIncomes = appData.additionalIncomes.filter(income => {
+            const incomeDate = new Date(income.date);
+            return incomeDate.getMonth() === currentMonth && incomeDate.getFullYear() === currentYear;
+        });
+        
+        const monthlyExpenses = appData.additionalExpenses.filter(expense => {
+            const expenseDate = new Date(expense.date);
+            return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+        });
+        
+        const totalIncome = monthlyRides.reduce((sum, ride) => sum + ride.price, 0) +
+                          monthlyIncomes.reduce((sum, income) => sum + income.amount, 0);
+                          
+        const totalExpenses = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+        const netIncome = totalIncome - totalExpenses;
+        
+        container.innerHTML = `
+            <div class="stat-card">
+                <h3>הכנסות חודשיות</h3>
+                <div class="value">${totalIncome.toLocaleString()}₪</div>
+            </div>
+            <div class="stat-card">
+                <h3>הוצאות חודשיות</h3>
+                <div class="value">${totalExpenses.toLocaleString()}₪</div>
+            </div>
+            <div class="stat-card">
+                <h3>הכנסה נטו</h3>
+                <div class="value">${netIncome.toLocaleString()}₪</div>
+            </div>
+            <div class="stat-card">
+                <h3>נסיעות בחודש</h3>
+                <div class="value">${monthlyRides.length}</div>
+            </div>
+        `;
+    }
+
+    function renderDailyReport() {
+        const table = document.getElementById('dailyReportTable');
+        const dateInput = document.getElementById('reportDate');
+        if (!table || !dateInput) return;
+        
+        const dateStr = dateInput.value;
+        const dailyRides = appData.rides.filter(ride => ride.date === dateStr);
+        
+        if (dailyRides.length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px;">
+                        אין נסיעות בתאריך זה
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        const total = dailyRides.reduce((sum, ride) => sum + ride.price, 0);
+        
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>שעה</th>
+                    <th>לקוח</th>
+                    <th>יעד</th>
+                    <th>מחיר</th>
+                    <th>הערות</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${dailyRides.map(ride => `
+                    <tr>
+                        <td>${ride.time}</td>
+                        <td>${ride.customerName || '-'}</td>
+                        <td>${ride.destination}</td>
+                        <td>${ride.price}₪</td>
+                        <td>${ride.notes || '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>סה"כ יומי</strong></td>
+                    <td colspan="2"><strong>${total}₪</strong></td>
+                </tr>
+            </tfoot>
+        `;
+    }
+
+    function renderMonthlyReport() {
+        const table = document.getElementById('monthlyReportTable');
+        const monthInput = document.getElementById('monthSelect');
+        const ctx = document.getElementById('monthlyChart');
+        if (!table || !monthInput || !ctx) return;
+        
+        const [year, month] = monthInput.value.split('-').map(Number);
+        const lastDay = new Date(year, month, 0).getDate();
+        
+        // נתונים עבור הגרף
+        const dailyData = [];
+        for (let day = 1; day <= lastDay; day++) {
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayRides = appData.rides.filter(ride => ride.date === dateStr);
+            const dayIncome = dayRides.reduce((sum, ride) => sum + ride.price, 0);
+            dailyData.push(dayIncome);
+        }
+        
+        // יצירת הגרף
+        if (window.monthlyChartInstance) {
+            window.monthlyChartInstance.destroy();
+        }
+        
+        window.monthlyChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: lastDay}, (_, i) => i + 1),
+                datasets: [{
+                    label: 'הכנסות יומיות (₪)',
+                    data: dailyData,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'הכנסות יומיות לחודש'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // טבלת דוח חודשי
+        let tableHTML = `
+            <thead>
+                <tr>
+                    <th>תאריך</th>
+                    <th>לקוחות</th>
+                    <th>נסיעות</th>
+                    <th>הכנסות</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        let monthlyTotal = 0;
+        let monthlyRides = 0;
+        
+        for (let day = 1; day <= lastDay; day++) {
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayRides = appData.rides.filter(ride => ride.date === dateStr);
+            const dayIncome = dayRides.reduce((sum, ride) => sum + ride.price, 0);
+            
+            if (dayRides.length > 0) {
+                const customerCount = new Set(dayRides.map(ride => ride.customerPhone)).size;
+                
+                tableHTML += `
+                    <tr>
+                        <td>${formatDate(dateStr)}</td>
+                        <td>${customerCount}</td>
+                        <td>${dayRides.length}</td>
+                        <td>${dayIncome}₪</td>
+                    </tr>
+                `;
+                
+                monthlyTotal += dayIncome;
+                monthlyRides += dayRides.length;
+            }
+        }
+        
+        tableHTML += `
+            </tbody>
+            <tfoot>
+                <tr style="font-weight: bold; background-color: rgba(52, 152, 219, 0.1);">
+                    <td>סה"כ חודשי</td>
+                    <td>${new Set(appData.rides.filter(ride => {
+                        const rideDate = new Date(ride.date);
+                        return rideDate.getMonth() === month - 1 && rideDate.getFullYear() === year;
+                    }).map(ride => ride.customerPhone)).size}</td>
+                    <td>${monthlyRides}</td>
+                    <td>${monthlyTotal}₪</td>
+                </tr>
+            </tfoot>
+        `;
+        
+        table.innerHTML = tableHTML;
+    }
+
+    function renderAdditionalEntries() {
+        const incomesTable = document.getElementById('additionalIncomesTable');
+        const expensesTable = document.getElementById('additionalExpensesTable');
+        
+        if (incomesTable) {
+            if (appData.additionalIncomes.length === 0) {
+                incomesTable.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px;">
+                            אין הכנסות נוספות
+                        </td>
+                    </tr>
+                `;
+            } else {
+                incomesTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>תאריך</th>
+                            <th>סכום</th>
+                            <th>תיאור</th>
+                            <th>פעולות</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${appData.additionalIncomes.map(income => `
+                            <tr>
+                                <td>${formatDate(income.date)}</td>
+                                <td>${income.amount}₪</td>
+                                <td>${income.description}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteAdditionalIncome(${income.id})" style="padding: 3px 8px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+            }
+        }
+        
+        if (expensesTable) {
+            if (appData.additionalExpenses.length === 0) {
+                expensesTable.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px;">
+                            אין הוצאות נוספות
+                        </td>
+                    </tr>
+                `;
+            } else {
+                expensesTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>תאריך</th>
+                            <th>סכום</th>
+                            <th>תיאור</th>
+                            <th>פעולות</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${appData.additionalExpenses.map(expense => `
+                            <tr>
+                                <td>${formatDate(expense.date)}</td>
+                                <td>${expense.amount}₪</td>
+                                <td>${expense.description}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteAdditionalExpense(${expense.id})" style="padding: 3px 8px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+            }
+        }
+    }
+
+    function renderPriceList() {
+        const container = document.getElementById('priceList');
+        if (!container) return;
+        
+        if (appData.priceList.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <p>אין יעדים במחירון</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = appData.priceList.map((item, index) => `
+            <div class="price-list-item">
+                <div>${item.destination}</div>
+                <div>${item.price}₪</div>
+                <button class="btn btn-sm btn-danger" onclick="deletePriceItem(${index})" style="padding: 3px 8px;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function renderCommonDestinations() {
+        const select = document.getElementById('commonDestinations');
+        const editSelect = document.getElementById('editCommonDestinations');
+        
+        if (select) {
+            // שמירת הבחירה הנוכחית
+            const currentValue = select.value;
+            
+            select.innerHTML = '<option value="">בחר יעד נפוץ</option>';
+            appData.priceList.forEach(item => {
+                select.innerHTML += `<option value="${item.destination}" data-price="${item.price}">${item.destination} - ${item.price}₪</option>`;
+            });
+            
+            // שחזור הבחירה אם אפשר
+            if (currentValue) {
+                select.value = currentValue;
+            }
+        }
+        
+        if (editSelect) {
+            // שמירת הבחירה הנוכחית
+            const currentValue = editSelect.value;
+            
+            editSelect.innerHTML = '<option value="">בחר יעד נפוץ</option>';
+            appData.priceList.forEach(item => {
+                editSelect.innerHTML += `<option value="${item.destination}" data-price="${item.price}">${item.destination} - ${item.price}₪</option>`;
+            });
+            
+            // שחזור הבחירה אם אפשר
+            if (currentValue) {
+                editSelect.value = currentValue;
+            }
+        }
+    }
+
+    // פונקציות עזר
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('he-IL');
+    }
+
+    function openRideDetails(rideId) {
+        const ride = appData.rides.find(r => r.id === rideId);
+        if (!ride) return;
+        
+        // הצגת פרטי הנסיעה
+        document.getElementById('editRideId').value = ride.id;
+        document.getElementById('editCustomerName').value = ride.customerName || '';
+        document.getElementById('editCustomerPhone').value = ride.customerPhone || '';
+        document.getElementById('editDestination').value = ride.destination;
+        document.getElementById('editPrice').value = ride.price;
+        document.getElementById('editRideDate').value = ride.date;
+        document.getElementById('editRideTime').value = ride.time;
+        document.getElementById('editNotes').value = ride.notes || '';
+        document.getElementById('editCommonDestinations').selectedIndex = 0;
+        
+        // פתיחת מודל העריכה
+        document.getElementById('editRideModal').style.display = 'flex';
+    }
+
+    // הוספת פונקציות לגלובל
+    window.showScreen = showScreen;
+    window.openAddRideModal = openAddRideModal;
+    window.openAddTaskModal = openAddTaskModal;
+    window.closeModal = closeModal;
+    window.switchTab = switchTab;
+    window.addRide = addRide;
+    window.addTask = addTask;
+    window.openEditRideModal = openEditRideModal;
+    window.updateRide = updateRide;
+    window.deleteRide = deleteRide;
+    window.deleteTask = deleteTask;
+    window.showIncomeForm = showIncomeForm;
+    window.showExpenseForm = showExpenseForm;
+    window.addIncome = addIncome;
+    window.addExpense = addExpense;
+    window.deleteAdditionalIncome = deleteAdditionalIncome;
+    window.deleteAdditionalExpense = deleteAdditionalExpense;
+    window.addPriceItem = addPriceItem;
+    window.deletePriceItem = deletePriceItem;
+    window.setTheme = setTheme;
+    window.saveMeterSettings = saveMeterSettings;
+    window.showHelpForCurrentScreen = showHelpForCurrentScreen;
+    window.startMeterRide = startMeterRide;
+    window.toggleMeterPause = toggleMeterPause;
+    window.toggleWaiting = toggleWaiting;
+    window.endMeterRide = endMeterRide;
+    window.closeMeter = closeMeter;
+    window.saveMeterRide = saveMeterRide;
+    window.convertTaskToRide = convertTaskToRide;
+    window.closeNotification = closeNotification;
+    window.createInvoice = createInvoice;
+    window.createReceipt = createReceipt;
+    window.printInvoice = printInvoice;
+    window.printReceipt = printReceipt;
+    window.sendInvoice = sendInvoice;
+    window.sendReceipt = sendReceipt;
+    window.sendSMS = sendSMS;
+    window.showDayRides = showDayRides;
+    window.openRideDetails = openRideDetails;
+</script>
+</body>
+</html>
